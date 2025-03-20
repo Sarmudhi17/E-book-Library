@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Glitter Books - Your Digital Library</title>
+    
+</head>
+<body>
+    <div class="bg-sparkles" id="bgSparkles"></div>
+    <div class="container">
+        <div class="auth-container" id="authContainer">
+            <h1>Glitter Books</h1>
+            <div class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+                <button type="button" id="loginButton">Login</button>
+                <div class="switch-form">
+                    <p>Don't have an account? <a href="#" id="switchToSignup">Create one</a></p>
+                </div>
+            </div>
+            <div class="signup-form" id="signupForm" style="display: none;">
+                <div class="form-group">
+                    <label for="newName">Name</label>
+                    <input type="text" id="newName" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label for="newEmail">Email</label>
+                    <input type="email" id="newEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Password</label>
+                    <input type="password" id="newPassword" placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Re-enter your password" required>
+                </div>
+                <button type="button" id="signupButton">Create Account</button>
+                <div class="switch-form">
+                    <p>Already have an account? <a href="#" id="switchToLogin">Log in</a></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="library-container" id="libraryContainer">
+            <div class="library-header">
+                <h1>Your Digital Library</h1>
+                <div style="display: flex; align-items: center;">
+                    <span class="welcome-message" id="welcomeMessage">Welcome, Reader!</span>
+                    <button class="logout-btn" id="logoutButton">Logout</button>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="all">All Books</div>
+                <div class="tab" data-tab="fiction">Fiction</div>
+                <div class="tab" data-tab="non-fiction">Non-Fiction</div>
+                <div class="tab" data-tab="favorites">Favorites</div>
+            </div>
+            
+            <div class="search-bar">
+                <input type="text" placeholder="Search by title or author...">
+                <button>Search</button>
+            </div>
+            
+            <div class="upload-section" id="uploadSection">
+                <h3>Add New Books</h3>
+                <p>Drag and drop your e-books here or click to browse</p>
+                <button>Browse Files</button>
+            </div>
+            
+            <div class="book-grid" id="bookGrid">
+                <!-- Example book items -->
+                <div class="book-item">
+                    <div class="book-cover">
+                        <img src="Pride.jpg" alt="Book cover">
+                    </div>
+                    <div class="book-info">
+                        <h4 class="book-title">Pride and Prejudice</h4>
+                        <p class="book-author">Jane Austen</p>
+                    </div>
+                </div>
+                <div class="book-item">
+                    <div class="book-cover">
+                        <img src="Great.jpg" alt="Book cover">
+                    </div>
+                    <div class="book-info">
+                        <h4 class="book-title">The Great Gatsby</h4>
+                        <p class="book-author">F. Scott Fitzgerald</p>
+                    </div>
+                </div>
+                <div class="book-item">
+                    <div class="book-cover">
+                        <img src="Kill.jpg" alt="Book cover">
+                    </div>
+                    <div class="book-info">
+                        <h4 class="book-title">To Kill a Mockingbird</h4>
+                        <p class="book-author">Harper Lee</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create sparkles in the background
+        function createSparkles() {
+            const container = document.getElementById('bgSparkles');
+            for (let i = 0; i < 30; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.classList.add('sparkle');
+                
+                // Random position
+                const posX = Math.random() * window.innerWidth;
+                const posY = Math.random() * window.innerHeight;
+                
+                // Random size
+                const size = Math.random() * 5 + 2;
+                
+                // Random animation delay
+                const delay = Math.random() * 2;
+                
+                sparkle.style.width = `${size}px`;
+                sparkle.style.height = `${size}px`;
+                sparkle.style.left = `${posX}px`;
+                sparkle.style.top = `${posY}px`;
+                sparkle.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(sparkle);
+            }
+        }
+        
+        // Handle drag and drop for e-book upload
+        function setupDragAndDrop() {
+            const uploadSection = document.getElementById('uploadSection');
+            
+            uploadSection.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadSection.style.backgroundColor = 'rgba(255, 105, 180, 0.3)';
+                uploadSection.style.boxShadow = '0 0 20px var(--pink)';
+            });
+            
+            uploadSection.addEventListener('dragleave', () => {
+                uploadSection.style.backgroundColor = 'rgba(255, 105, 180, 0.1)';
+                uploadSection.style.boxShadow = 'none';
+            });
+            
+            uploadSection.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadSection.style.backgroundColor = 'rgba(255, 105, 180, 0.1)';
+                uploadSection.style.boxShadow = 'none';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileUpload(files);
+                }
+            });
+            
+            // Browse button click
+            const browseButton = uploadSection.querySelector('button');
+            browseButton.addEventListener('click', () => {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.epub,.pdf,.mobi';
+                fileInput.multiple = true;
+                fileInput.style.display = 'none';
+                
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        handleFileUpload(e.target.files);
+                    }
+                });
+                
+                document.body.appendChild(fileInput);
+                fileInput.click();
+                document.body.removeChild(fileInput);
+            });
+        }
+        
+        // Handle file upload
+        function handleFileUpload(files) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                // Here you would typically send the file to your server
+                // For this demo, we'll just simulate adding a new book
+                setTimeout(() => {
+                    addBookToLibrary(file.name, 'Author', '/api/placeholder/150/180');
+                }, 500);
+            }
+        }
+        
+        // Add a new book to the library
+        function addBookToLibrary(title, author, coverUrl) {
+            const bookGrid = document.getElementById('bookGrid');
+            
+            const bookItem = document.createElement('div');
+            bookItem.classList.add('book-item');
+            
+            const bookCover = document.createElement('div');
+            bookCover.classList.add('book-cover');
+            
+            const coverImg = document.createElement('img');
+            coverImg.src = coverUrl;
+            coverImg.alt = 'Book cover';
+            
+            const bookInfo = document.createElement('div');
+            bookInfo.classList.add('book-info');
+            
+            const bookTitle = document.createElement('h4');
+            bookTitle.classList.add('book-title');
+            bookTitle.textContent = title;
+            
+            const bookAuthor = document.createElement('p');
+            bookAuthor.classList.add('book-author');
+            bookAuthor.textContent = author;
+            
+            bookCover.appendChild(coverImg);
+            bookInfo.appendChild(bookTitle);
+            bookInfo.appendChild(bookAuthor);
+            
+            bookItem.appendChild(bookCover);
+            bookItem.appendChild(bookInfo);
+            
+            bookGrid.appendChild(bookItem);
+        }
+        
+        // Handle login/signup form switching
+        function setupAuthForms() {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const switchToSignup = document.getElementById('switchToSignup');
+            const switchToLogin = document.getElementById('switchToLogin');
+            
+            switchToSignup.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'flex';
+            });
+            
+            switchToLogin.addEventListener('click', (e) => {
+                e.preventDefault();
+                signupForm.style.display = 'none';
+                loginForm.style.display = 'flex';
+            });
+        }
+        
+        // Handle authentication
+        function setupAuthentication() {
+            const loginButton = document.getElementById('loginButton');
+            const signupButton = document.getElementById('signupButton');
+            const logoutButton = document.getElementById('logoutButton');
+            const authContainer = document.getElementById('authContainer');
+            const libraryContainer = document.getElementById('libraryContainer');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            
+            loginButton.addEventListener('click', () => {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                if (email && password) {
+                    // Simulate login (in a real app, this would involve API calls)
+                    authContainer.style.display = 'none';
+                    libraryContainer.style.display = 'flex';
+                    welcomeMessage.textContent = `Welcome, ${email.split('@')[0]}!`;
+                }
+            });
+            
+            signupButton.addEventListener('click', () => {
+                const name = document.getElementById('newName').value;
+                const email = document.getElementById('newEmail').value;
+                const password = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (name && email && password && password === confirmPassword) {
+                    // Simulate signup (in a real app, this would involve API calls)
+                    authContainer.style.display = 'none';
+                    libraryContainer.style.display = 'flex';
+                    welcomeMessage.textContent = `Welcome, ${name}!`;
+                }
+            });
+            
+            logoutButton.addEventListener('click', () => {
+                libraryContainer.style.display = 'none';
+                authContainer.style.display = 'flex';
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+            });
+        }
+        
+        // Set up tab switching
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+                    
+                    // Here you would typically filter the books based on the selected category
+                    const category = tab.getAttribute('data-tab');
+                    console.log(`Showing ${category} books`);
+                });
+            });
+        }
+        
+        // Initialize the application
+        window.addEventListener('DOMContentLoaded', () => {
+            createSparkles();
+            setupDragAndDrop();
+            setupAuthForms();
+            setupAuthentication();
+            setupTabs();
+        });
+    </script>
+</body>
+</html>
+
