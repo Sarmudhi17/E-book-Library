@@ -1,0 +1,238 @@
+// BookUploadForm.jsx
+import React, { useState } from 'react';
+import axios from 'axios';
+import './BookUploadForm.css';
+
+const BookUploadForm = () => {
+  const [bookData, setBookData] = useState({
+    title: '',
+    author: '',
+    description: '',
+    genre: '',
+    tags: ''
+  });
+  const [coverFile, setCoverFile] = useState(null);
+  const [bookFile, setBookFile] = useState(null);
+  const [coverPreview, setCoverPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setBookData({
+      ...bookData,
+      [name]: value
+    });
+  };
+
+  const handleCoverChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCoverFile(file);
+      // Create a preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setCoverPreview(previewUrl);
+    }
+  };
+
+  const handleBookChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setBookFile(file);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!bookFile) {
+      setError('Please select an e-book file');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError('');
+      
+      const formData = new FormData();
+      formData.append('title', bookData.title);
+      formData.append('author', bookData.author);
+      formData.append('description', bookData.description);
+      formData.append('genre', bookData.genre);
+      formData.append('tags', bookData.tags);
+      
+      if (coverFile) {
+        formData.append('cover', coverFile);
+      }
+      
+      formData.append('book', bookFile);
+      
+      // Get the token from localStorage
+      const token = localStorage.getItem('token');
+      
+      const response = await axios.post('/api/books/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      setSuccess(true);
+      setBookData({
+        title: '',
+        author: '',
+        description: '',
+        genre: '',
+        tags: ''
+      });
+      setCoverFile(null);
+      setBookFile(null);
+      setCoverPreview(null);
+      
+      // Reset success message after 3 seconds
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
+      
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error uploading book');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="upload-container">
+      <div className="glitter-overlay"></div>
+      <h2>Upload New E-Book</h2>
+      
+      {success && (
+        <div className="success-message">
+          <div className="sparkle"></div>
+          Book uploaded successfully!
+          <div className="sparkle"></div>
+        </div>
+      )}
+      
+      {error && <div className="error-message">{error}</div>}
+      
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="title">Book Title*</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            value={bookData.title}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="author">Author*</label>
+          <input
+            type="text"
+            id="author"
+            name="author"
+            value={bookData.author}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            value={bookData.description}
+            onChange={handleInputChange}
+            rows="4"
+          />
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="genre">Genre</label>
+          <select
+            id="genre"
+            name="genre"
+            value={bookData.genre}
+            onChange={handleInputChange}
+          >
+            <option value="">Select Genre</option>
+            <option value="Fiction">Fiction</option>
+            <option value="Non-Fiction">Non-Fiction</option>
+            <option value="Science Fiction">Science Fiction</option>
+            <option value="Fantasy">Fantasy</option>
+            <option value="Mystery">Mystery</option>
+            <option value="Thriller">Thriller</option>
+            <option value="Romance">Romance</option>
+            <option value="Biography">Biography</option>
+            <option value="History">History</option>
+            <option value="Self-Help">Self-Help</option>
+            <option value="Technical">Technical</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="tags">Tags (comma separated)</label>
+          <input
+            type="text"
+            id="tags"
+            name="tags"
+            value={bookData.tags}
+            onChange={handleInputChange}
+            placeholder="fantasy, adventure, magic"
+          />
+        </div>
+        
+        <div className="file-upload-container">
+          <div className="cover-upload">
+            <label htmlFor="cover">Book Cover</label>
+            <div 
+              className="cover-preview"
+              style={{ backgroundImage: coverPreview ? `url(${coverPreview})` : 'none' }}
+            >
+              {!coverPreview && <span>Preview</span>}
+            </div>
+            <input
+              type="file"
+              id="cover"
+              onChange={handleCoverChange}
+              accept="image/*"
+              className="file-input"
+            />
+            <label htmlFor="cover" className="file-label">
+              Choose Cover Image
+            </label>
+          </div>
+          
+          <div className="book-upload">
+            <label htmlFor="book">E-Book File*</label>
+            <input
+              type="file"
+              id="book"
+              onChange={handleBookChange}
+              accept=".pdf,.epub"
+              className="file-input"
+              required
+            />
+            <label htmlFor="book" className="file-label">
+              {bookFile ? bookFile.name : 'Choose E-Book File'}
+            </label>
+            <p className="file-info">Supported formats: PDF, EPUB (max 30MB)</p>
+          </div>
+        </div>
+        
+        <button type="submit" className="upload-button" disabled={loading}>
+          {loading ? 'Uploading...' : 'Upload Book'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default BookUploadForm;
